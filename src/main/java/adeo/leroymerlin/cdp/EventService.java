@@ -29,4 +29,18 @@ public class EventService {
 
         return events;
     }
+
+
+    /**
+     * fix updateEvent method : get event by id to prevent brand and members data (like id,...) and update only nbStars and comment
+     */
+    public void updateEvent(Event event) {
+        eventRepository.findById(event.getId())
+                .ifPresent(eventToSave -> {
+                    eventToSave.setNbStars(event.getNbStars());
+                    eventToSave.setComment(event.getComment());
+                    eventRepository.save(eventToSave);
+                });
+
+    }
 }
