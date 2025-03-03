@@ -24,12 +24,23 @@ public class EventService {
     }
 
     public List<Event> getFilteredEvents(String query) {
-        List<Event> events = eventRepository.findAllBy();
-        // Filter the events list in pure JAVA here
-
-        return events;
+        return eventRepository.findAllBy().stream()
+                .map(event -> {
+                    if (!event.getTitle().matches(".*\\[\\d+\\]$")) {
+                        event.setTitle(event.getTitle() + " [" + event.getBands().size() + "]");
+                    }
+                    event.getBands().forEach(band -> {
+                        if (!band.getName().matches(".*\\[\\d+\\]$")) {
+                            band.setName(band.getName() + " [" + band.getMembers().size() + "]");
+                        }
+                    });
+                    return event;
+                })
+                .filter(event -> event.getBands().stream()
+                        .flatMap(band -> band.getMembers().stream())
+                        .anyMatch(member -> member.getName().contains(query)))
+                .toList();
     }
-
 
     /**
      * fix updateEvent method : get event by id to prevent brand and members data (like id,...) and update only nbStars and comment
